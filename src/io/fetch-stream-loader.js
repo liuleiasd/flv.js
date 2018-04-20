@@ -72,7 +72,7 @@ class FetchStreamLoader extends BaseLoader {
         }
 
         let seekConfig = this._seekHandler.getConfig(sourceURL, range);
-
+        this.seekConfig = seekConfig;
         let headers = new self.Headers();
 
         if (typeof seekConfig.headers === 'object') {
@@ -93,7 +93,7 @@ class FetchStreamLoader extends BaseLoader {
             // Safari incorrectly indicates 'no-referrer' as default policy, fuck it
             referrerPolicy: 'no-referrer-when-downgrade'
         };
-
+        this.params = params;
         // cors is enabled by default
         if (dataSource.cors === false) {
             // no-cors means 'disregard cors policy', which can only be used in ServiceWorker
@@ -111,15 +111,24 @@ class FetchStreamLoader extends BaseLoader {
         }
 
         this._status = LoaderStatus.kConnecting;
-        self.fetch(seekConfig.url, params).then((res) => {
-            if (this._requestAbort) {
-                this._requestAbort = false;
-                this._status = LoaderStatus.kIdle;
+        this._refresh();
+    }
+
+    abort() {
+        this._requestAbort = true;
+    }
+    _refresh() {
+        let than = this;
+        const MILLISECOND = 1000;
+        self.fetch(than.seekConfig.url, than.params).then((res) => {
+            if (than._requestAbort) {
+                than._requestAbort = false;
+                than._status = LoaderStatus.kIdle;
                 return;
             }
             if (res.ok && (res.status >= 200 && res.status <= 299)) {
-                if (res.url !== seekConfig.url) {
-                    if (this._onURLRedirect) {
+                if (res.url !== than.seekConfig.url) {
+                    if (than._onURLRedirect) {
                         let redirectedURL = this._seekHandler.removeURLParameters(res.url);
                         this._onURLRedirect(redirectedURL);
                     }
@@ -145,6 +154,11 @@ class FetchStreamLoader extends BaseLoader {
                 }
             }
         }).catch((e) => {
+            let timer = null;
+            window.clearTimeout(timer);
+            timer = setTimeout(()=>{
+                than._refresh();
+            },MILLISECOND)
             this._status = LoaderStatus.kError;
             if (this._onError) {
                 this._onError(LoaderErrors.EXCEPTION, {code: -1, msg: e.message});
@@ -152,10 +166,6 @@ class FetchStreamLoader extends BaseLoader {
                 throw e;
             }
         });
-    }
-
-    abort() {
-        this._requestAbort = true;
     }
 
     _pump(reader) {  // ReadableStreamReader
