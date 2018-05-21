@@ -89,7 +89,7 @@ gulp.task('watch', ['clean'], function () {
             port: 8000,
             open: false
         });
-        require('opn')('http://localhost:8000/demo/index.html');
+        require('opn')('http://localhost:8000/demo/index02.html');
     });
 });
 

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+
+<video id="videoElement" style="width: 500px;height: 400px;" controls autoplay></video>
+<script src="../dist/flv.js"></script>
+<script>
+
+    var params = {
+        eboxSN : "tpQeuwJOCxk3u9Gf201l",
+        videoDivId : "videoElement",
+        username: "pad",
+        password: "123456",
+    }
+    var mas = new flvjs.FlvNative(params);
+    mas.play();
+</script>
+</body>
+</html>

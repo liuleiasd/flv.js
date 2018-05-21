@@ -24,7 +24,7 @@ import PlayerEvents from './player/player-events.js';
 import {ErrorTypes, ErrorDetails} from './player/player-errors.js';
 import LoggingControl from './utils/logging-control.js';
 import {InvalidArgumentException} from './utils/exception.js';
-
+import FlvNative from './player/flv-native.js';
 // here are all the interfaces
 
 // install polyfills
@@ -73,6 +73,7 @@ flvjs.ErrorTypes = ErrorTypes;
 flvjs.ErrorDetails = ErrorDetails;
 
 flvjs.FlvPlayer = FlvPlayer;
+flvjs.FlvNative = FlvNative;
 flvjs.NativePlayer = NativePlayer;
 flvjs.LoggingControl = LoggingControl;
 
