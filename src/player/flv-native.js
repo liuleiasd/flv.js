@@ -3,11 +3,32 @@
  */
 var FlvNative = function (params) {
     this.videoDivId = params.videoDivId;
-    this.url = "https://dev.teleus.cn/api/v2/masService/ebox/getPlayAddr/" + params.eboxSN;
+    this.API_HOST = "https://dev.teleus.cn"
+    this.url = this.API_HOST+"/api/v2/masService/ebox/getPlayAddr/" + params.eboxSN;
     this.player = null;
+    this.username = params.username;
+    this.password = params.password;
+    this.token = null;
 }
 FlvNative.prototype = {
     constructor: FlvNative,
+    initLogin: function() {
+        var _this = this;
+        var ajax = new XMLHttpRequest();
+        ajax.open('post',this.API_HOST+'/api/auth/login');
+        ajax.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+        ajax.send("username="+this.username+"&password="+this.password);
+        ajax.onreadystatechange = function () {
+            if (ajax.readyState==4&&ajax.status==200) {
+                var data = JSON.parse(ajax.responseText);
+                if (data.token != null) {
+                    _this.token = data.token;
+                    _this.play();
+                }
+            }
+        }
+
+    },
     play: function () {
         var _this = this;
         this.masPush(null, function (ajaxPlayAddr) {
@@ -36,11 +57,10 @@ FlvNative.prototype = {
         var ajax = new XMLHttpRequest();
         ajax.open('post',_this.url);
         ajax.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+        ajax.setRequestHeader("Authorization",_this.token);
         ajax.send();
         ajax.onreadystatechange = function () {
-            console.log(ajax)
             if (ajax.readyState==4&&ajax.status==200) {
-                console.log(ajax.responseText);
                 var data = JSON.parse(ajax.responseText);
                 if (data.status == 1) {
                     pushRetryIndex = 0;
